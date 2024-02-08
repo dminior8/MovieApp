@@ -30,7 +30,9 @@ public class MovieController {
     @GetMapping("/{imdbId}")
     public ResponseEntity<Optional<Movie>> getSingleMovie(
             @PathVariable String imdbId){
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Access-Control-Allow-Origin", "*");
         return new ResponseEntity<Optional<Movie>>(
-                movieService.singleMovie(imdbId), HttpStatus.OK);
+                movieService.singleMovie(imdbId),headers, HttpStatus.OK);
     }
 }
