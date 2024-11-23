@@ -1,0 +1,42 @@
+[
+    {
+        "_id": { "$oid": "64b1f8f1c77c000000000001" },
+        "title": "The Shawshank Redemption",
+        "director": "Frank Darabont",
+        "genre": "Drama",
+        "releaseYear": 1994,
+        "rating": 9.3
+    },
+    {
+        "_id": { "$oid": "64b1f8f1c77c000000000002" },
+        "title": "The Godfather",
+        "director": "Francis Ford Coppola",
+        "genre": "Crime",
+        "releaseYear": 1972,
+        "rating": 9.2
+    },
+    {
+        "_id": { "$oid": "64b1f8f1c77c000000000003" },
+        "title": "The Dark Knight",
+        "director": "Christopher Nolan",
+        "genre": "Action",
+        "releaseYear": 2008,
+        "rating": 9.0
+    },
+    {
+        "_id": { "$oid": "64b1f8f1c77c000000000004" },
+        "title": "Pulp Fiction",
+        "director": "Quentin Tarantino",
+        "genre": "Crime",
+        "releaseYear": 1994,
+        "rating": 8.9
+    },
+    {
+        "_id": { "$oid": "64b1f8f1c77c000000000005" },
+        "title": "Schindler’s List",
+        "director": "Steven Spielberg",
+        "genre": "Biography",
+        "releaseYear": 1993,
+        "rating": 8.9
+    }
+]

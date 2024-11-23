@@ -1,0 +1,35 @@
+[
+    {
+        "username": "admin",
+        "email": "admin@example.com",
+        "password_hash": "$2a$12$SiCJINHrpP6nGh/BG7Xouu/M8HnYkhMN/Gu6nJ5OOU4HaE2Lbo/9y",
+        "is_admin": true,
+        "is_blocked": false,
+        "favorites": [
+            { "movie_id": { "$oid": "64b1f8f1c77c000000000001" } },
+            { "movie_id": { "$oid": "64b1f8f1c77c000000000003" } }
+        ]
+    },
+    {
+        "username": "user1",
+        "email": "user1@example.com",
+        "password_hash": "$2a$12$SiCJINHrpP6nGh/BG7Xouu/M8HnYkhMN/Gu6nJ5OOU4HaE2Lbo/9y",
+        "is_admin": false,
+        "is_blocked": false,
+        "favorites": [
+            { "movie_id": { "$oid": "64b1f8f1c77c000000000002" } },
+            { "movie_id": { "$oid": "64b1f8f1c77c000000000004" } }
+        ]
+    },
+    {
+        "username": "user2",
+        "email": "user2@example.com",
+        "password_hash": "$2a$12$SiCJINHrpP6nGh/BG7Xouu/M8HnYkhMN/Gu6nJ5OOU4HaE2Lbo/9y",
+        "is_admin": false,
+        "is_blocked": false,
+        "favorites": [
+            { "movie_id": { "$oid": "64b1f8f1c77c000000000005" } },
+            { "movie_id": { "$oid": "64b1f8f1c77c000000000001" } }
+        ]
+    }
+]
