@@ -35,6 +35,9 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
             <Link className="nav-link" to="/favorites">
               Favourites
             </Link>
+            <Link className="nav-link" to="/adminPanel">
+              Admin Panel
+            </Link>
           </Nav>
           {isLoggedIn ? (
             <Button variant="outline-info" className="me-2" onClick={handleLogout}>
