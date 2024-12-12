@@ -1,12 +1,13 @@
-import React from 'react';
+import React,{useState, useEffect} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Navbar, Nav, Container, Button } from 'react-bootstrap';
 import { FaVideo } from 'react-icons/fa';
+import { jwtDecode } from 'jwt-decode';
 import Cookies from 'js-cookie';
 
 import { UserAPI } from '../../api/UserAPI';
 
-const Header = ({ isLoggedIn, setIsLoggedIn }) => {
+const Header = ({ isLoggedIn, setIsLoggedIn, isAdmin }) => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -32,9 +33,16 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
         <Navbar.Toggle aria-controls="navbarScroll" />
         <Navbar.Collapse id="navbarScroll">
           <Nav className="me-auto my-2 my-lg-0" style={{ maxHeight: '100px' }} navbarScroll>
-            <Link className="nav-link" to="/favorites">
-              Favourites
-            </Link>
+            {isLoggedIn ?
+                (<Link className="nav-link" to="/favorites">
+                  Favourites
+                </Link>) : ""
+            }
+            {(isLoggedIn && isAdmin) ?
+                (<Link className="nav-link" to="/adminPanel">
+                  Admin panel
+                </Link>) : ""
+            }
           </Nav>
           {isLoggedIn ? (
             <Button variant="outline-info" className="me-2" onClick={handleLogout}>

@@ -6,8 +6,9 @@ import RegisterPanel from '../components/auth/registerPanel/RegisterPanel';
 import MovieList from '../components/homePage/MovieList';
 import MovieDetails from '../components/homePage/MovieDetails';
 import FavoritesPanel from '../components/homePage/FavoritesList';
+import AdminPanel from '../components/homePage/AdminPanel';
 
-export const routes = (isLoggedIn, setIsLoggedIn) => (
+export const routes = (isLoggedIn, setIsLoggedIn, isAdmin) => (
   <>
     <Route
       path="/auth/login"
@@ -29,6 +30,10 @@ export const routes = (isLoggedIn, setIsLoggedIn) => (
       path="/favorites"
       element={isLoggedIn ? <FavoritesPanel /> : <Navigate to="/auth/login" />}
     />
+      <Route
+          path="/adminPanel"
+          element={(isLoggedIn && isAdmin) ? <AdminPanel /> : <Navigate to="/auth/login" />}
+      />
     <Route
       path="/auth/logout"
       element={<Logout setIsLoggedIn={setIsLoggedIn} />}
