@@ -4,7 +4,29 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Movie = require('../models/Movie');
+const { auth, adminOnly } = require('../middleware/auth');
 const path = '/users';
+
+// Pobierz wszystkich uzytkowników
+router.get(path + '/', auth, async (req, res) => {
+    try {
+        const users = await User.find({});
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ error: 'Błąd serwera' });
+    }
+});
+
+// Pobierz szczegóły
+router.get(path + '/:id', auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'Użytkownik nie znaleziony' });
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ error: 'Błąd serwera' });
+    }
+});
 
 // Pobierz wszystkie ulubione filmy
 router.get(path + '/:user_id/favorites', async (req, res) => {
@@ -53,5 +75,15 @@ router.delete(path + '/:id/favorites/:movie_id', async (req, res) => {
     }
 });
 
+// Usuń użytkownika (tylko dla adminów)
+router.delete(path + '/:id', auth, adminOnly, async (req, res) => {
+    try {
+        const deletedUser = await User.findByIdAndDelete(req.params.id);
+        if (!deletedUser) return res.status(404).json({ error: 'Użytkownik nie znaleziony' });
+        res.json({ message: 'Użytkownik został usunięty' });
+    } catch (error) {
+        res.status(500).json({ error: 'Błąd przy usuwaniu użytkownika' });
+    }
+});
 
 module.exports = router;

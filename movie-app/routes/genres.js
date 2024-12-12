@@ -6,7 +6,7 @@ const { auth } = require('../middleware/auth');
 const path = '/genres';
 
 // Pobranie listy gatunków filmowych
-router.get(path + '/', auth, async (req, res) => {
+router.get(path, auth, async (req, res) => {
     try {
         const genres = await Genre.find({});
         res.json(genres);
@@ -14,5 +14,6 @@ router.get(path + '/', auth, async (req, res) => {
         res.status(500).json({ error: 'Błąd serwera' });
     }
 });
+
 
 module.exports = router;
