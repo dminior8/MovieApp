@@ -28,8 +28,16 @@ const AdminPanel = () => {
 
         // Symulowane pobieranie użytkowników
         const fetchUsers = async () => {
-            // Podłącz API użytkowników w przyszłości
-            setUsers(["User 1", "User 2", "User 3"]);
+            try {
+                setLoading(true);
+                const usersData = await MoviesAPI.getAllUsers(); // Pobranie filmów z API
+                setUsers(usersData);
+            } catch (err) {
+                console.error("Błąd przy pobieraniu użytkowników:", err);
+                setError("Nie udało się pobrać listy użytkowników.");
+            } finally {
+                setLoading(false);
+            }
         };
 
         fetchMovies();
@@ -40,6 +48,27 @@ const AdminPanel = () => {
         setMovies((prevMovies) => [...prevMovies, newMovie]); // Dodaj nowy film do listy
     };
 
+    // Funkcja do usuwania filmu
+    const handleDeleteMovie = async (id) => {
+        try {
+            await MoviesAPI.deleteMovie(id); // Usuwanie filmu z API
+            setMovies((prevMovies) => prevMovies.filter(movie => movie._id !== id)); // Usuwanie filmu z listy
+        } catch (err) {
+            console.error("Błąd przy usuwaniu filmu:", err);
+            setError("Nie udało się usunąć filmu.");
+        }
+    };
+
+    const handleDeleteUser = async (id) => {
+        try {
+            await MoviesAPI.deleteUser(id); // Usuwanie użytkownika z API
+            setUsers((prevUsers) => prevUsers.filter(user => user._id !== id)); // Usuwanie użytkownika z listy
+        } catch (err) {
+            console.error("Błąd przy usuwaniu filmu:", err);
+            setError("Nie udało się usunąć filmu.");
+        }
+    };
+
     return (
         <Container className="my-4">
             <h1 className="text-center mb-4 gradient-title text-light">Admin Panel</h1>
@@ -48,13 +77,23 @@ const AdminPanel = () => {
                 <Col md={6}>
                     <h2>Lista użytkowników</h2>
                     <ListGroup>
-                        {users.map((user, index) => (
-                            <ListGroup.Item key={index}>{user}</ListGroup.Item>
+                        {users.map((user) => (
+                            <ListGroup.Item key={user._id} className="d-flex justify-content-between align-items-center">
+                                <div>
+                                    {user.username}{" "}
+                                    <span style={{ fontWeight: 'bold' }}>
+                                            ({user.email})
+                                        </span>
+                                </div>
+                                <FaRegTrashAlt
+                                    size={20}
+                                    color="red"
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={() => handleDeleteUser(user._id)} // Wywołanie funkcji usuwania użytkownika
+                                />
+                            </ListGroup.Item>
                         ))}
                     </ListGroup>
-                    <div className="mt-3">
-                        <Button variant="primary">Dodaj użytkownika</Button>
-                    </div>
                 </Col>
                 <Col md={6}>
                     <h2>Lista filmów</h2>
@@ -70,7 +109,12 @@ const AdminPanel = () => {
                                             ({movie.release_year})
                                         </span>
                                     </div>
-                                    <FaRegTrashAlt size={20} color="red" style={{ cursor: 'pointer' }} />
+                                    <FaRegTrashAlt
+                                        size={20}
+                                        color="red"
+                                        style={{ cursor: 'pointer' }}
+                                        onClick={() => handleDeleteMovie(movie._id)} // Wywołanie funkcji usuwania filmu
+                                    />
                                 </ListGroup.Item>
                             ))}
                         </ListGroup>

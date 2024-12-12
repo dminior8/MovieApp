@@ -32,8 +32,7 @@ export const routes = (isLoggedIn, setIsLoggedIn, isAdmin) => (
     />
       <Route
           path="/adminPanel"
-          //element={(isLoggedIn && isAdmin) ? <AdminPanel /> : <Navigate to="/auth/login" />}
-          element={isLoggedIn ? <AdminPanel /> : <Navigate to="/auth/login" />}
+          element={(isLoggedIn && isAdmin) ? <AdminPanel /> : <Navigate to="/auth/login" />}
       />
     <Route
       path="/auth/logout"

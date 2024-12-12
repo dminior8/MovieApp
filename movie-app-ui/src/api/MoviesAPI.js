@@ -1,6 +1,16 @@
 import apiClient from './ApiClient'; // Importujemy klienta API
 
 export const MoviesAPI = {
+    // Pobierz wszystkich użytkowników
+    getAllUsers: () => {
+        return apiClient.get("/users").then((response) => response.data); // Pobieranie wszystkich użytkowników
+    },
+
+    // Pobierz użytkownika po ID
+    getUserById: (id) => {
+        return apiClient.get(`/users/${id}`).then((response) => response.data); // Pobieranie użytkownika na podstawie ID
+    },
+
   // Pobierz wszystkie filmy
   getAllMovies: () => {
     return apiClient.get("/movies").then((response) => response.data); // Pobieranie wszystkich filmów
@@ -55,6 +65,56 @@ export const MoviesAPI = {
         throw error;  // Rzucamy błąd, aby obsłużyć go w komponencie
       });
   },
+
+    // Dodaj nowy film
+    addMovie: (movieData) => {
+        return apiClient.post("/movies", movieData)
+            .then(response => response.data)
+            .catch(error => {
+                console.error('Błąd przy dodawaniu filmu:', error);
+                throw error;
+            });
+    },
+
+    // Dodaj nowego aktora
+    addActor: (actorData) => {
+        return apiClient.post("/actors", actorData)
+            .then(response => response.data)
+            .catch(error => {
+                console.error('Błąd przy dodawaniu aktora:', error);
+                throw error;
+            });
+    },
+
+    // Dodaj nowego reżysera
+    addDirector: (directorData) => {
+        return apiClient.post("/directors", directorData)
+            .then(response => response.data)
+            .catch(error => {
+                console.error('Błąd przy dodawaniu reżysera:', error);
+                throw error;
+            });
+    },
+
+    // Usuń film
+    deleteMovie: (id) => {
+        return apiClient.delete(`/movies/${id}`)
+            .then(response => response.data)
+            .catch(error => {
+                console.error('Błąd przy usuwaniu filmu:', error);
+                throw error;
+            });
+    },
+
+    // Usuń użytkownika
+    deleteUser: (id) => {
+        return apiClient.delete(`/users/${id}`)
+            .then(response => response.data)
+            .catch(error => {
+                console.error('Błąd przy usuwaniu użytkownika:', error);
+                throw error;
+            });
+    },
 };
 
 

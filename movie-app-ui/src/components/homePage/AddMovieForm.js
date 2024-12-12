@@ -1,35 +1,53 @@
-import React, { useState } from 'react';
-import { Modal, Button, Form, InputGroup } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { MoviesAPI } from '../../api/MoviesAPI'; // Importujemy API
+import { Modal, Form, Button } from 'react-bootstrap';
 
 const AddMovieForm = ({ show, onClose, onAdd }) => {
     const [formData, setFormData] = useState({
         title: '',
-        releaseYear: '',
+        release_year: '',
         genre: '',
         countryOfOrigin: '',
-        directorFirstName: '',
-        directorLastName: '',
-        actors: [{ firstName: '', lastName: '' }], // Początkowo pusta lista aktorów
+        director: { first_name: '', last_name: '' },
+        actors: [{ first_name: '', last_name: '' }],
         imgUrl: '',
         description: ''
     });
-
+    const [genres, setGenres] = useState([]);
+    const [countries, setCountries] = useState([]);
     const currentYear = new Date().getFullYear();
 
-    const genres = [
-        "Biography", "Drama", "Comedy", "Horror",
-        "Action", "Adventure", "Fantasy",
-        "Sci-Fi", "Romance", "Documentary"
-    ];
+    useEffect(() => {
+        const fetchGenres = async () => {
+            try {
+                const genresData = await MoviesAPI.getGenres();
+                setGenres(genresData);
+            } catch (error) {
+                console.error(error.message);
+            }
+        };
 
-    const countries = [
-        "USA", "UK", "France", "Germany", "Canada", "Australia", "India", "Spain", "Italy", "Japan", "Russia",
-        "China", "South Korea", "Brazil", "Mexico", "Sweden", "Netherlands", "Poland", "Argentina", "South Africa"
-    ];
+        const fetchCountries = async () => {
+            try {
+                const countriesData = await MoviesAPI.getCountries();
+                setCountries(countriesData);
+            } catch (error) {
+                console.error(error.message);
+            }
+        };
+
+        fetchGenres();
+        fetchCountries();
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
+    };
+
+    const handleDirectorChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, director: { ...formData.director, [name]: value } });
     };
 
     const handleActorChange = (index, e) => {
@@ -40,7 +58,7 @@ const AddMovieForm = ({ show, onClose, onAdd }) => {
     };
 
     const addActor = () => {
-        setFormData({ ...formData, actors: [...formData.actors, { firstName: '', lastName: '' }] });
+        setFormData({ ...formData, actors: [...formData.actors, { first_name: '', last_name: '' }] });
     };
 
     const removeActor = (index) => {
@@ -51,57 +69,37 @@ const AddMovieForm = ({ show, onClose, onAdd }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Walidacja formularza
-        if (!formData.title || !formData.releaseYear || !formData.genre || !formData.countryOfOrigin || !formData.directorFirstName || !formData.directorLastName || !formData.imgUrl || !formData.description) {
+        if (!formData.title || !formData.release_year || !formData.genre || !formData.countryOfOrigin || !formData.director.first_name || !formData.director.last_name || !formData.imgUrl || !formData.description) {
             alert("Wypełnij wszystkie pola!");
             return;
         }
-        if (
-            isNaN(formData.releaseYear) ||
-            isNaN(formData.releaseYear) ||
-            formData.releaseYear < 1900 ||
-            formData.releaseYear > currentYear
-        ) {
-            alert(`Rok wydania musi być liczbą z zakresu od 1900 do ${currentYear}!`);
-            return;
-        }
 
-        // Przygotowanie danych do wysłania
-        const movieData = {
-            title: formData.title,
-            release_year: parseInt(formData.releaseYear, 10),
-            genre: formData.genre,
-            countryOfOrigin: formData.countryOfOrigin,
-            director: `${formData.directorFirstName} ${formData.directorLastName}`,
-            actors: formData.actors.map(actor => ({
-                first_name: actor.firstName,
-                last_name: actor.lastName
-            })),
-            imgUrl: formData.imgUrl,
-            description: formData.description
-        };
-
-        // Wysłanie danych do backendu
         try {
-            const response = await fetch('/movies', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(movieData), // Przesyłamy dane filmu w formacie JSON
-            });
+            // Dodaj reżysera
+            const directorData = await MoviesAPI.addDirector(formData.director);
 
-            if (response.ok) {
-                const newMovie = await response.json(); // Odbieramy odpowiedź z serwera
-                onAdd(newMovie); // Wywołanie funkcji callback, aby dodać film do stanu w aplikacji
-                onClose(); // Zamknij modal po dodaniu filmu
-            } else {
-                const error = await response.json();
-                alert(`Błąd: ${error.message}`);
-            }
+            // Dodaj aktorów
+            const actorPromises = formData.actors.map(actor => MoviesAPI.addActor(actor));
+            const actorsData = await Promise.all(actorPromises);
+
+            // Dodaj film
+            const movieData = {
+                title: formData.title,
+                release_year: parseInt(formData.release_year, 10),
+                genre: formData.genre,
+                countryOfOrigin: formData.countryOfOrigin,
+                director: `${directorData.first_name} ${directorData.last_name}`,
+                actors: actorsData.map(actor => `${actor.first_name} ${actor.last_name}`),
+                imgUrl: formData.imgUrl,
+                description: formData.description
+            };
+
+            const newMovie = await MoviesAPI.addMovie(movieData);
+            onAdd(newMovie);
+            onClose();
+
         } catch (error) {
-            console.error('Błąd podczas wysyłania danych:', error);
-            alert('Błąd podczas dodawania filmu');
+            console.error('Błąd:', error);
         }
     };
 
@@ -112,119 +110,58 @@ const AddMovieForm = ({ show, onClose, onAdd }) => {
             </Modal.Header>
             <Modal.Body>
                 <Form onSubmit={handleSubmit}>
+                    {/* Formularz */}
                     <Form.Group controlId="title">
                         <Form.Label>Tytuł</Form.Label>
-                        <Form.Control
-                            type="text"
-                            name="title"
-                            value={formData.title}
-                            onChange={handleChange}
-                        />
+                        <Form.Control type="text" name="title" value={formData.title} onChange={handleChange} />
                     </Form.Group>
-                    <Form.Group controlId="releaseYear">
+                    <Form.Group controlId="release_year">
                         <Form.Label>Rok wydania</Form.Label>
-                        <Form.Control
-                            type="number"
-                            name="releaseYear"
-                            value={formData.releaseYear}
-                            onChange={handleChange}
-                            min="1900"
-                            max={currentYear}
-                        />
+                        <Form.Control type="number" name="release_year" value={formData.release_year} onChange={handleChange} min="1900" max={currentYear} />
                     </Form.Group>
                     <Form.Group controlId="genre">
                         <Form.Label>Gatunek</Form.Label>
-                        <Form.Control
-                            as="select"
-                            name="genre"
-                            value={formData.genre}
-                            onChange={handleChange}
-                        >
+                        <Form.Control as="select" name="genre" value={formData.genre} onChange={handleChange}>
                             <option value="">Wybierz gatunek</option>
                             {genres.map((genre, index) => (
-                                <option key={index} value={genre}>{genre}</option>
+                                <option key={index} value={genre.genre}>{genre.genre}</option>
                             ))}
                         </Form.Control>
                     </Form.Group>
                     <Form.Group controlId="countryOfOrigin">
-                        <Form.Label>Kraj produkcji</Form.Label>
-                        <Form.Control
-                            as="select"
-                            name="countryOfOrigin"
-                            value={formData.countryOfOrigin}
-                            onChange={handleChange}
-                        >
+                        <Form.Label>Kraj pochodzenia</Form.Label>
+                        <Form.Control as="select" name="countryOfOrigin" value={formData.countryOfOrigin} onChange={handleChange}>
                             <option value="">Wybierz kraj</option>
                             {countries.map((country, index) => (
-                                <option key={index} value={country}>{country}</option>
+                                <option key={index} value={country.country}>{country.country}</option>
                             ))}
                         </Form.Control>
                     </Form.Group>
-                    <Form.Group controlId="directorFirstName">
-                        <Form.Label>Imię reżysera</Form.Label>
-                        <Form.Control
-                            type="text"
-                            name="directorFirstName"
-                            value={formData.directorFirstName}
-                            onChange={handleChange}
-                        />
+                    <Form.Group controlId="director">
+                        <Form.Label>Reżyser</Form.Label>
+                        <Form.Control type="text" name="first_name" placeholder="Imię" value={formData.director.first_name} onChange={handleDirectorChange} />
+                        <Form.Control type="text" name="last_name" placeholder="Nazwisko" value={formData.director.last_name} onChange={handleDirectorChange} />
                     </Form.Group>
-                    <Form.Group controlId="directorLastName">
-                        <Form.Label>Nazwisko reżysera</Form.Label>
-                        <Form.Control
-                            type="text"
-                            name="directorLastName"
-                            value={formData.directorLastName}
-                            onChange={handleChange}
-                        />
+                    <Form.Group controlId="actors">
+                        <Form.Label>Aktorzy</Form.Label>
+                        {formData.actors.map((actor, index) => (
+                            <div key={index} className="actor-fields">
+                                <Form.Control type="text" name="first_name" placeholder="Imię" value={actor.first_name} onChange={(e) => handleActorChange(index, e)} />
+                                <Form.Control type="text" name="last_name" placeholder="Nazwisko" value={actor.last_name} onChange={(e) => handleActorChange(index, e)} />
+                                <Button variant="danger" onClick={() => removeActor(index)}>Usuń</Button>
+                            </div>
+                        ))}
+                        <Button variant="primary" onClick={addActor}>Dodaj aktora</Button>
                     </Form.Group>
-                    <Form.Label>Aktorzy</Form.Label>
-                    {formData.actors.map((actor, index) => (
-                        <div key={index}>
-                            <Form.Group controlId={`actorFirstName_${index}`}>
-                                <Form.Control
-                                    type="text"
-                                    name="firstName"
-                                    placeholder="Imię aktora"
-                                    value={actor.firstName}
-                                    onChange={(e) => handleActorChange(index, e)}
-                                />
-                            </Form.Group>
-                            <Form.Group controlId={`actorLastName_${index}`}>
-                                <Form.Control
-                                    type="text"
-                                    name="lastName"
-                                    placeholder="Nazwisko aktora"
-                                    value={actor.lastName}
-                                    onChange={(e) => handleActorChange(index, e)}
-                                />
-                            </Form.Group>
-                            <Button variant="danger" onClick={() => removeActor(index)}>Usuń aktora</Button>
-                        </div>
-                    ))}
-                    <Button variant="primary" onClick={addActor}>Dodaj aktora</Button>
                     <Form.Group controlId="imgUrl">
-                        <Form.Label>URL obrazu</Form.Label>
-                        <Form.Control
-                            type="text"
-                            name="imgUrl"
-                            value={formData.imgUrl}
-                            onChange={handleChange}
-                        />
+                        <Form.Label>URL plakatu</Form.Label>
+                        <Form.Control type="text" name="imgUrl" value={formData.imgUrl} onChange={handleChange} />
                     </Form.Group>
                     <Form.Group controlId="description">
                         <Form.Label>Opis</Form.Label>
-                        <Form.Control
-                            as="textarea"
-                            name="description"
-                            value={formData.description}
-                            onChange={handleChange}
-                            maxLength="255"
-                        />
+                        <Form.Control as="textarea" name="description" rows={3} value={formData.description} onChange={handleChange} />
                     </Form.Group>
-                    <Button variant="primary" type="submit" className="mt-3">
-                        Dodaj film
-                    </Button>
+                    <Button variant="success" type="submit">Dodaj film</Button>
                 </Form>
             </Modal.Body>
         </Modal>
